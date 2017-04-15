@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>README.md</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
+  <script>
+    var relativeDir = "";
+    var thisFile = "README.md";
+    var defaultSidebar = true;
+  </script>
+  <script src="doc-script.js"></script>
+
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+
+      <div class="heading h1">
+        <a href="#metalsmith-debug-ui">metalsmith-debug-ui</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#install">install</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#usage">usage</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#options">options</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#plugin-compatibility">plugin compatibility</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#testing">testing</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#building">building</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#author">Author</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#contributing">Contributing</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#license">License</a>
+      </div>
+
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container">
+    <div class="docs markdown"><div class="pilwrap" id="metalsmith-debug-ui">
+  <h1>
+    <a href="#metalsmith-debug-ui" name="metalsmith-debug-ui" class="pilcrow"></a>
+metalsmith-debug-ui
+  </h1>
+</div>
+<p><img src="https://nodei.co/npm/metalsmith-debug-ui.png?downloads=true&amp;downloadRank=true&amp;stars=true" alt="nodei.co"></p>
+<p><img src="https://img.shields.io/npm/v/metalsmith-debug-ui.svg" alt="npm"></p>
+<p><img src="https://img.shields.io/github/issues/leviwheatcroft/metalsmith-debug-ui.svg" alt="github-issues"></p>
+<p><img src="https://img.shields.io/github/stars/leviwheatcroft/metalsmith-debug-ui.svg" alt="stars"></p>
+<p><img src="https://img.shields.io/github/forks/leviwheatcroft/metalsmith-debug-ui.svg" alt="forks"></p>
+<p>Browser based debug interface for <a href="https://metalsmith.io">metalsmith</a></p>
+<p>Pauses build process after each plugin and allows you to explore files structure
+and metadata before continuing.</p>
+<p>Features:</p>
+<ul>
+<li>nice ui for exploring files &amp; metadata</li>
+<li>cli control with <code>--debug-ui</code> arg</li>
+<li>cool react &amp; socket.io based client</li>
+</ul>
+<p><img src="http://leviwheatcroft.github.io/metalsmith-debug-ui/images/files.png" alt="files interface">
+<img src="http://leviwheatcroft.github.io/metalsmith-debug-ui/images/log.png" alt="log interface"></p>
+<p>See the <a href="https://leviwheatcroft.github.io/metalsmith-debug-ui" title="annotated source">annotated source</a> or <a href="https://github.com/leviwheatcroft/metalsmith-debug-ui" title="github repo">github repo</a></p>
+<div class="pilwrap" id="install">
+  <h2>
+    <a href="#install" name="install" class="pilcrow"></a>
+install
+  </h2>
+</div>
+<p><code>npm i --save metalsmith-debug-ui</code></p>
+<div class="pilwrap" id="usage">
+  <h2>
+    <a href="#usage" name="usage" class="pilcrow"></a>
+usage
+  </h2>
+</div>
+<p>Because this plugin needs to mutate the metalsmith instance, it can't be called
+as a regular plugin, you need to patch the metalsmith instance as shown.</p>
+<pre><code class="javascript"><span class="hljs-keyword">import</span> Metalsmith <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith'</span>
+<span class="hljs-keyword">import</span> debugUi <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-debug-ui'</span>
+
+<span class="hljs-keyword">let</span> ms = Metalsmith(<span class="hljs-string">'src'</span>)
+debugUi(ms, { <span class="hljs-attr">always</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">5050</span> })
+
+ms
+.use(...)
+.build(...)
+</code></pre>
+<p>To initiate debug-ui you need to pass command line arg <code>--debug-ui</code>, or pass
+the option <code>always: true</code>.</p>
+<div class="pilwrap" id="options">
+  <h2>
+    <a href="#options" name="options" class="pilcrow"></a>
+options
+  </h2>
+</div>
+<p><em>always</em>: {Boolean} (Default: false) if true, debug-ui will run without
+<code>--debug-ui</code> command line arg.
+<em>port</em>: {Number} (Default: 8081) http port</p>
+<div class="pilwrap" id="plugin-compatibility">
+  <h2>
+    <a href="#plugin-compatibility" name="plugin-compatibility" class="pilcrow"></a>
+plugin compatibility
+  </h2>
+</div>
+<p>Far as I'm aware all plugins will work when using debug ui.</p>
+<p>However plugins need to explicitly use debug-ui's log function wrapper in order
+for their debug output to show up in debug-ui, and most plugins don't do that
+at this time. The example below show's how to do that.</p>
+<p>In addition, debug-ui can only identify plugins which export a named function
+as the plugin. The example shows that too.</p>
+<pre><code class="javascript"><span class="hljs-comment">// metalsmith-witty-quote-generator</span>
+<span class="hljs-keyword">import</span> debug <span class="hljs-keyword">from</span> <span class="hljs-string">'debug'</span>
+
+<span class="hljs-comment">// start debugging as normal</span>
+<span class="hljs-keyword">const</span> dbg = debug(<span class="hljs-string">'witty-quote-generator'</span>)
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">options</span>) </span>{
+  <span class="hljs-comment">// use named function here</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">wittyQuoteGenerator</span>(<span class="hljs-params">files, metalsmith, done</span>) </span>{
+    <span class="hljs-comment">// patch debug.log like this</span>
+    debug.log = metalsmith.log || debug.log
+    <span class="hljs-comment">// ... your plugin logic</span>
+  }
+}
+</code></pre>
+<div class="pilwrap" id="testing">
+  <h2>
+    <a href="#testing" name="testing" class="pilcrow"></a>
+testing
+  </h2>
+</div>
+<p>nil.</p>
+<div class="pilwrap" id="building">
+  <h2>
+    <a href="#building" name="building" class="pilcrow"></a>
+building
+  </h2>
+</div>
+<p>Deprecation warning re: parseQuery is from upstream package. Don't worry about
+it.</p>
+<p><code>npm run watch</code></p>
+<div class="pilwrap" id="author">
+  <h2>
+    <a href="#author" name="author" class="pilcrow"></a>
+Author
+  </h2>
+</div>
+<p>Levi Wheatcroft <a href="mailto:levi@wht.cr.html">levi@wht.cr</a></p>
+<div class="pilwrap" id="contributing">
+  <h2>
+    <a href="#contributing" name="contributing" class="pilcrow"></a>
+Contributing
+  </h2>
+</div>
+<p>Contributions welcome; Please submit all pull requests against the master
+branch.</p>
+<div class="pilwrap" id="license">
+  <h2>
+    <a href="#license" name="license" class="pilcrow"></a>
+License
+  </h2>
+</div>
+<ul>
+<li><strong>MIT</strong> : http://opensource.org/licenses/MIT</li>
+</ul>
+</div>
+  </div>
+</body>
+</html>

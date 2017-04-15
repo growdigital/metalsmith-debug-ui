@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>index.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = "../";
+    var thisFile = "lib/index.js";
+    var defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+
+      <div class="heading h2">
+        <a href="#log">log</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#patch">patch</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#build">build</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#pause">pause</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#tree">tree</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#mutate">mutate</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#mutators">mutators</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#server">server</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#exports">exports</a>
+      </div>
+
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container">
+    <div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+    
+      <tr>
+        <td class="docs">
+          <h1>index.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+    
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1"></a>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">import</span> socketIo <span class="hljs-keyword">from</span> <span class="hljs-string">'socket.io'</span>
+<span class="hljs-keyword">import</span> http <span class="hljs-keyword">from</span> <span class="hljs-string">'http'</span>
+<span class="hljs-keyword">import</span> vow <span class="hljs-keyword">from</span> <span class="hljs-string">'vow'</span>
+<span class="hljs-keyword">import</span> wrap <span class="hljs-keyword">from</span> <span class="hljs-string">'wrap-fn'</span>
+<span class="hljs-keyword">import</span> debug <span class="hljs-keyword">from</span> <span class="hljs-string">'debug'</span>
+<span class="hljs-keyword">import</span> st <span class="hljs-keyword">from</span> <span class="hljs-string">'st'</span>
+<span class="hljs-keyword">import</span> {
+  resolve,
+  separator,
+  parse
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>
+<span class="hljs-keyword">import</span> transform <span class="hljs-keyword">from</span> <span class="hljs-string">'lodash.transform'</span>
+<span class="hljs-keyword">import</span> set <span class="hljs-keyword">from</span> <span class="hljs-string">'lodash.set'</span>
+<span class="hljs-keyword">import</span> stripAnsi <span class="hljs-keyword">from</span> <span class="hljs-string">'strip-ansi'</span>
+
+<span class="hljs-keyword">const</span> dbg = debug(<span class="hljs-string">'metalsmith-debug-ui'</span>)
+
+<span class="hljs-keyword">let</span> io
+<span class="hljs-keyword">let</span> paused
+<span class="hljs-keyword">let</span> data
+<span class="hljs-keyword">let</span> doAll = <span class="hljs-literal">false</span>
+<span class="hljs-keyword">const</span> defaults = {
+  <span class="hljs-attr">always</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">port</span>: <span class="hljs-number">8081</span>
+}
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="dox">
+<div class="summary">
+<div class="pilwrap" id="log">
+  <h2>
+    <a href="#log" name="log" class="pilcrow"></a>
+log
+  </h2>
+</div>
+</div>
+<div class="body">
+<p>this log fn is stashed on metalsmith instance to allow other plugins to
+write to this debug ui. It simply emits the args to the client then logs as
+normal</p>
+</div>
+<div class="details">
+<div class="dox_tag_title">Params</div>
+<div class="dox_tag_detail">
+<span class="dox_tag_name">...args</span>
+<span>accepts parameters in the same way <code>debug.log</code> does
+</span>
+</div>
+</div>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">log</span> (<span class="hljs-params">...args</span>) </span>{
+  <span class="hljs-keyword">if</span> (io) io.sockets.emit(<span class="hljs-string">'log'</span>, args.map(stripAnsi))
+  maskedLog(...args)
+}
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3"></a>
+</div>
+<p>hook <code>debug.log</code></p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">const</span> maskedLog = debug.log
+debug.log = log
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="dox">
+<div class="summary">
+<div class="pilwrap" id="patch">
+  <h2>
+    <a href="#patch" name="patch" class="pilcrow"></a>
+patch
+  </h2>
+</div>
+</div>
+<div class="body">
+<p>this is the only exported function, to be used like:</p>
+<pre><code>let metalsmith = new Metalsmith(__dirname)
+patch(metalsmith)
+</code></pre>
+</div>
+<div class="details">
+<div class="dox_tag_title">Params</div>
+<div class="dox_tag_detail">
+<span class="dox_tag_name">metalsmith</span>
+<span class="dox_type">object</span>
+<span>instance
+</span>
+</div>
+</div>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">patch</span> (<span class="hljs-params">metalsmith, options</span>) </span>{
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5"></a>
+</div>
+<p>defaults</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  options = <span class="hljs-built_in">Object</span>.assign(defaults, options)
+  <span class="hljs-keyword">if</span> (
+    (!options.always) &amp;&amp;
+    <span class="hljs-function">(<span class="hljs-params">!process.argv.slice(<span class="hljs-number">1</span></span>).<span class="hljs-params">find</span>(<span class="hljs-params">(value</span>) =&gt;</span> (value === <span class="hljs-string">'--debug-ui'</span>)))
+  ) {
+    dbg(<span class="hljs-string">'enable debug-ui by calling with "--debug-ui" argument'</span>)
+    <span class="hljs-keyword">return</span>
+  }
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6"></a>
+</div>
+<p>start server</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  server(options.port || <span class="hljs-number">8081</span>)
+  metalsmith._maskedBuild = metalsmith.build
+  metalsmith.build = build
+  metalsmith.log = log
+}
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="dox">
+<div class="summary">
+<div class="pilwrap" id="build">
+  <h2>
+    <a href="#build" name="build" class="pilcrow"></a>
+build
+  </h2>
+</div>
+<p>replaces metalsmith's build fn. simply prepends <code>pause</code> fn to each plugin</p>
+</div>
+<div class="body">
+</div>
+<div class="details">
+<div class="dox_tag_title">Params</div>
+<div class="dox_tag_detail">
+<span class="dox_tag_name">...args</span>
+<span>same args as metalsmith build
+</span>
+</div>
+</div>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">build</span> (<span class="hljs-params">...args</span>) </span>{
+  dbg(<span class="hljs-string">'build called'</span>)
+  <span class="hljs-keyword">const</span> masked = []
+  <span class="hljs-keyword">this</span>.plugins.forEach(<span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> {
+    masked.push(<span class="hljs-function">(<span class="hljs-params">...args</span>) =&gt;</span> {
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-8" id="section-8"></a>
+</div>
+<p>pass the original fn to pause, so that the client can report it's
+<code>name</code> property (so plugins should return named functions)</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">      <span class="hljs-keyword">let</span> defer = vow.defer()
+      pause(...args, fn)
+      .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9"></a>
+</div>
+<p>wrap here to support sync, async, and promises.. like metalsmith</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">        wrap(fn, defer.resolve.bind(defer))(...args.slice(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>))
+      })
+      <span class="hljs-keyword">return</span> defer.promise()
+    })
+  })
+  <span class="hljs-keyword">this</span>.plugins = masked
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-10" id="section-10"></a>
+</div>
+<p>run metalsmith's original build</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  <span class="hljs-keyword">this</span>._maskedBuild(...args)
+}
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="dox">
+<div class="summary">
+<div class="pilwrap" id="pause">
+  <h2>
+    <a href="#pause" name="pause" class="pilcrow"></a>
+pause
+  </h2>
+</div>
+<p>run before every plugin, pass data to ui, wait for user action.</p>
+</div>
+<div class="body">
+</div>
+<div class="details">
+<div class="dox_tag_title">Params</div>
+<div class="dox_tag_detail">
+<span class="dox_tag_name">files</span>
+<span class="dox_type">object</span>
+<span>list of files
+</span>
+</div>
+<div class="dox_tag_detail">
+<span class="dox_tag_name">metalsmith</span>
+<span class="dox_type">object</span>
+<span>instance
+</span>
+</div>
+</div>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">pause</span> (<span class="hljs-params">files, metalsmith</span>) </span>{
+  <span class="hljs-keyword">let</span> next = <span class="hljs-built_in">arguments</span>[<span class="hljs-built_in">arguments</span>.length - <span class="hljs-number">1</span>].name
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-12" id="section-12"></a>
+</div>
+<p>name of bound function is 'bound functionName', get rid of that prefix</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  next = next ? next.replace(<span class="hljs-regexp">/bound /</span>, <span class="hljs-string">''</span>) : <span class="hljs-string">'anonymous'</span>
+
+  data = {
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-13" id="section-13"></a>
+</div>
+<p>use fn.name to give user some idea where we're up to</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">    next,
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-14" id="section-14"></a>
+</div>
+<p>convert files structure to directory tree</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">    files: tree(files),
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-15" id="section-15"></a>
+</div>
+<p>normal metalsmith metadata</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">    metadata: metalsmith.metadata()
+  }
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-16" id="section-16"></a>
+</div>
+<p>prepare data for presentation</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  data = mutate(data)
+  <span class="hljs-keyword">if</span> (doAll) <span class="hljs-keyword">return</span> vow.resolve()
+  dbg(<span class="hljs-string">`waiting (next: <span class="hljs-subst">${data.next}</span>)`</span>)
+  io.sockets.emit(<span class="hljs-string">'plugin'</span>, data)
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-17" id="section-17"></a>
+</div>
+<p>store deferred globally</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  paused = vow.defer()
+  <span class="hljs-keyword">return</span> paused.promise()
+}
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="dox">
+<div class="summary">
+<div class="pilwrap" id="tree">
+  <h2>
+    <a href="#tree" name="tree" class="pilcrow"></a>
+tree
+  </h2>
+</div>
+<p>convert files structure to directory tree</p>
+</div>
+<div class="body">
+</div>
+<div class="details">
+<div class="dox_tag_title">Params</div>
+<div class="dox_tag_detail">
+<span class="dox_tag_name">files</span>
+<span class="dox_type">object</span>
+<span>metalsmith files structure
+</span>
+</div>
+</div>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">tree</span> (<span class="hljs-params">files</span>) </span>{
+  <span class="hljs-keyword">return</span> transform(
+    files,
+    <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result, val, key</span>) </span>{
+      <span class="hljs-keyword">let</span> path = parse(key)
+      path = [
+        path.dir ? path.dir.replace(separator, <span class="hljs-string">'.'</span>) : <span class="hljs-string">''</span>,
+        <span class="hljs-string">`['<span class="hljs-subst">${path.base}</span>']`</span>
+      ].join(<span class="hljs-string">''</span>)
+      set(result, path, val)
+    },
+    {}
+  )
+}
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="dox">
+<div class="summary">
+<div class="pilwrap" id="mutate">
+  <h2>
+    <a href="#mutate" name="mutate" class="pilcrow"></a>
+mutate
+  </h2>
+</div>
+<p>recursable fn to apply mutators to object values
+used to prepare object for presentation</p>
+</div>
+<div class="body">
+</div>
+<div class="details">
+<div class="dox_tag_title">Params</div>
+<div class="dox_tag_detail">
+<span class="dox_tag_name">obj</span>
+<span class="dox_type">object</span>
+<span>target
+</span>
+</div>
+</div>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mutate</span> (<span class="hljs-params">obj</span>) </span>{
+  <span class="hljs-keyword">return</span> transform(
+    obj,
+    <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result, val, key</span>) </span>{
+      mutators.some(<span class="hljs-function">(<span class="hljs-params">parser</span>) =&gt;</span> {
+        result[key] = parser(val, key)
+        <span class="hljs-keyword">return</span> result[key]
+      })
+      <span class="hljs-keyword">if</span> (result[key] === <span class="hljs-literal">undefined</span>) result[key] = val
+    },
+    {}
+  )
+}
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="dox">
+<div class="summary">
+<div class="pilwrap" id="mutators">
+  <h2>
+    <a href="#mutators" name="mutators" class="pilcrow"></a>
+mutators
+  </h2>
+</div>
+<p>array of fns to apply to object values, will not continue after truthy value
+is returned.</p>
+</div>
+<div class="body">
+</div>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">const</span> mutators = [
+  <span class="hljs-function">(<span class="hljs-params">val, key</span>) =&gt;</span> {
+    <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'contents'</span>) <span class="hljs-keyword">return</span> <span class="hljs-string">'...'</span>
+  },
+  (val, key) =&gt; {
+    <span class="hljs-keyword">if</span> (Buffer.isBuffer(val)) <span class="hljs-keyword">return</span> val.toString()
+  },
+  (val, key) =&gt; {
+    <span class="hljs-keyword">if</span> (val <span class="hljs-keyword">instanceof</span> <span class="hljs-built_in">Object</span>) <span class="hljs-keyword">return</span> mutate(val)
+  }
+]
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="dox">
+<div class="summary">
+<div class="pilwrap" id="server">
+  <h2>
+    <a href="#server" name="server" class="pilcrow"></a>
+server
+  </h2>
+</div>
+<p>a simple static server to serve the ui, and attach to <code>socket.io</code></p>
+</div>
+<div class="body">
+</div>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">server</span> (<span class="hljs-params">port</span>) </span>{
+  <span class="hljs-keyword">const</span> mount = st({
+    <span class="hljs-attr">path</span>: resolve(__dirname, <span class="hljs-string">'client'</span>),
+    <span class="hljs-attr">index</span>: <span class="hljs-string">'index.html'</span>
+  })
+  <span class="hljs-keyword">const</span> app = http.createServer(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">if</span> (mount(req, res)) <span class="hljs-keyword">return</span>
+  })
+  io = socketIo(app)
+
+  app.listen(port, () =&gt; dbg(<span class="hljs-string">`listening on <span class="hljs-subst">${port}</span>`</span>))
+
+  io.on(<span class="hljs-string">'connection'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">socket</span>) </span>{
+    socket.emit(<span class="hljs-string">'plugin'</span>, data)
+    socket.on(<span class="hljs-string">'doNext'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+      paused.resolve()
+    })
+    socket.on(<span class="hljs-string">'doAll'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+      doAll = <span class="hljs-literal">true</span>
+    })
+  })
+}
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="dox">
+<div class="summary">
+<div class="pilwrap" id="exports">
+  <h2>
+    <a href="#exports" name="exports" class="pilcrow"></a>
+exports
+  </h2>
+</div>
+</div>
+<div class="body">
+</div>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> patch
+<span class="hljs-keyword">export</span> { patch }
+
+</pre>
+        </td>
+      </tr>
+    
+  </tbody>
+</table>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>client.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../../doc-style.css" />
+  <script src="../../doc-filelist.js"></script>
+  <script>
+    var relativeDir = "../../";
+    var thisFile = "lib/client/client.js";
+    var defaultSidebar = true;
+  </script>
+  <script src="../../doc-script.js"></script>
+
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container">
+    <div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+    
+      <tr>
+        <td class="docs">
+          <h1>client.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+    
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1"></a>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">import</span> io <span class="hljs-keyword">from</span> <span class="hljs-string">'socket.io-client'</span>
+<span class="hljs-keyword">import</span> JSONTree <span class="hljs-keyword">from</span> <span class="hljs-string">'react-json-tree'</span>
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2"></a>
+</div>
+<p>eslint sees <code>React</code> as declared not used, react plugin is supposed to fix ?</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">import</span> {
+  <span class="hljs-keyword">default</span> <span class="hljs-keyword">as</span> React, <span class="hljs-comment">// eslint-disable-line no-unused-vars</span>
+  Component
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
+<span class="hljs-keyword">import</span> {
+  Tabs,
+  Tab,
+  Alert,
+  Button
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'react-bootstrap'</span> <span class="hljs-comment">// ~190kb</span>
+<span class="hljs-keyword">import</span> cookie <span class="hljs-keyword">from</span> <span class="hljs-string">'react-cookie'</span>
+<span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'react-filterable-table'</span>
+<span class="hljs-keyword">import</span> { render } <span class="hljs-keyword">from</span> <span class="hljs-string">'react-dom'</span>
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3"></a>
+</div>
+<p>data &amp; log defined globally to preserve between events</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">let</span> data = {
+  <span class="hljs-attr">files</span>: <span class="hljs-string">'no data yet :('</span>,
+  <span class="hljs-attr">metadata</span>: <span class="hljs-string">'no data yet :('</span>,
+  <span class="hljs-attr">next</span>: <span class="hljs-string">'??'</span>
+}
+<span class="hljs-keyword">let</span> log = []
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4"></a>
+</div>
+<p>set up socket</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">let</span> socket = io(<span class="hljs-string">'http://localhost:8081'</span>)
+socket.on(<span class="hljs-string">'plugin'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">update</span>) </span>{
+  data = update
+  renderApp()
+})
+socket.on(<span class="hljs-string">'log'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">entry</span>) </span>{
+  entry = <span class="hljs-regexp">/metalsmith-([a-z|-]*)\s(.*),(.*)/</span>.exec(entry)
+  <span class="hljs-keyword">if</span> (!entry) <span class="hljs-keyword">return</span>
+  log = log.concat([{
+    <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().toISOString().slice(<span class="hljs-number">11</span>, <span class="hljs-number">-1</span>),
+    <span class="hljs-attr">plugin</span>: entry[<span class="hljs-number">1</span>],
+    <span class="hljs-attr">message</span>: entry[<span class="hljs-number">2</span>],
+    <span class="hljs-attr">elapsed</span>: entry[<span class="hljs-number">3</span>]
+  }])
+  renderApp()
+})
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">renderApp</span> (<span class="hljs-params"></span>) </span>{
+  render(
+    &lt;App data={data} log={log} /&gt;,
+    document.getElementById('root')
+  )
+}
+
+class LogWarning extends Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      alertVisible: !cookie.load('debugUiHideWarning')
+    }
+  }
+  render () {
+    if (!this.state.alertVisible) return null
+    return (
+      &lt;Alert bsStyle="danger" onDismiss={this.handleAlertDismiss.bind(this)}&gt;
+        &lt;h4&gt;Not logging all the things?&lt;/h4&gt;
+        &lt;p&gt;
+          Sadly, debug-ui cant hook debug writes, so other modules will need
+          to explicitly support writing to this log :(
+        &lt;/p&gt;
+        &lt;p&gt;
+          &lt;Button onClick={this.handleAlertDismiss.bind(this)} bsStyle="danger"&gt;Ok, got it&lt;/Button&gt;
+        &lt;/p&gt;
+      &lt;/Alert&gt;
+    )
+  }
+  handleAlertDismiss () {
+    cookie.save('debugUiHideWarning', true, {
+      path: '/',
+      expires: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000))
+    })
+    this.setState({alertVisible: false})
+  }
+  handleAlertShow () {
+    this.setState({alertVisible: true})
+  }
+
+}
+
+function doNext () {
+  socket.emit('doNext')
+}
+function doAll () {
+  socket.emit('doAll')
+}
+
+const theme = {
+  scheme: 'monokai',
+  author: 'wimer hazenberg (http://www.monokai.nl)',
+  base00: '#272822',
+  base01: '#383830',
+  base02: '#49483e',
+  base03: '#75715e',
+  base04: '#a59f85',
+  base05: '#f8f8f2',
+  base06: '#f5f4f1',
+  base07: '#f9f8f5',
+  base08: '#f92672',
+  base09: '#fd971f',
+  base0A: '#f4bf75',
+  base0B: '#a6e22e',
+  base0C: '#a1efe4',
+  base0D: '#66d9ef',
+  base0E: '#ae81ff',
+  base0F: '#cc6633'
+}
+
+const App = (props) =&gt; (
+  &lt;div&gt;
+    &lt;div className="row margin-top"&gt;
+      &lt;div className="col"&gt;
+        &lt;h2&gt;Metalsmith Debug UI&lt;/h2&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div className="row margin-top"&gt;
+      &lt;div className="col"&gt;
+        &lt;div className="btn-group" role="group" aria-label="..."&gt;
+          &lt;button id="do-all" className="btn btn-default" onClick={doAll} type="button"&gt;Run Remaining&lt;/button&gt;
+          &lt;button id="do-next" className="btn btn-default" onClick={doNext} type="button"&gt;Run Next ({props.data.next || 'anonymous'})&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div className="row margin-top"&gt;
+      &lt;div className="col"&gt;
+        &lt;Tabs defaultActiveKey={1}&gt;
+          &lt;Tab eventKey={1} title="Files"&gt;
+            &lt;div className="margin-top"&gt;
+              &lt;JSONTree
+                data={props.data.files}
+                theme={theme}
+                invertTheme
+              /&gt;
+            &lt;/div&gt;
+          &lt;/Tab&gt;
+          &lt;Tab eventKey={2} title="Metadata"&gt;
+            &lt;div className="margin-top"&gt;
+              &lt;JSONTree
+                data={props.data.metadata}
+                theme={theme}
+                invertTheme
+              /&gt;
+            &lt;/div&gt;
+          &lt;/Tab&gt;
+          &lt;Tab eventKey={3} title="Log"&gt;
+            &lt;div className="margin-top"&gt;
+              &lt;LogWarning /&gt;
+            &lt;/div&gt;
+            &lt;div className="margin-top"&gt;
+              &lt;Table
+                keys="plugin"
+                initialSort="timestamp"
+                noRecordsMessage="Nothing logged yet."
+                noFilteredRecordsMessage="No matches."
+                data={props.log}
+                fields={[
+                  { name: 'timestamp' },
+                  { name: 'plugin', inputFilterable: true },
+                  { name: 'message', inputFilterable: true },
+                  { name: 'elapsed' }
+                ]}
+              /&gt;
+            &lt;/div&gt;
+          &lt;/Tab&gt;
+        &lt;/Tabs&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+)
+
+</pre>
+        </td>
+      </tr>
+    
+  </tbody>
+</table>
+
+  </div>
+</body>
+</html>
