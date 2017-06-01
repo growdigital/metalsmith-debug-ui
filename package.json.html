@@ -64,7 +64,8 @@
   <span class="hljs-attr">"main"</span>: <span class="hljs-string">"dist/index.js"</span>,
   <span class="hljs-attr">"scripts"</span>: {
     <span class="hljs-attr">"build"</span>: <span class="hljs-string">"npm run babel &amp;&amp; npm run client &amp;&amp; npm run docs &amp;&amp; cp docs/README.md.html docs/index.html &amp;&amp; npm run gh-pages"</span>,
-    <span class="hljs-attr">"client"</span>: <span class="hljs-string">"node dist/build &amp;&amp; npm run webpack"</span>,
+    <span class="hljs-attr">"client"</span>: <span class="hljs-string">"cross-env DEBUG=metalsmith* babel-node build"</span>,
+    <span class="hljs-attr">"client:prodn"</span>: <span class="hljs-string">"cross-env DEBUG=metalsmith* NODE_ENV=production babel-node build"</span>,
     <span class="hljs-attr">"readme"</span>: <span class="hljs-string">"node-readme"</span>,
     <span class="hljs-attr">"babel"</span>: <span class="hljs-string">"cross-env NODE_ENV=node6 babel lib -d dist --ignore client"</span>,
     <span class="hljs-attr">"babel:watch"</span>: <span class="hljs-string">"cross-env NODE_ENV=node6 babel lib --watch -d dist --ignore client"</span>,
@@ -75,8 +76,8 @@
     <span class="hljs-attr">"test:watch"</span>: <span class="hljs-string">"cross-env NODE_ENV=test mocha --compilers js:babel-register --watch test"</span>,
     <span class="hljs-attr">"version"</span>: <span class="hljs-string">"npm run build"</span>,
     <span class="hljs-attr">"postversion"</span>: <span class="hljs-string">"git push &amp;&amp; git push --tags"</span>,
-    <span class="hljs-attr">"webpack"</span>: <span class="hljs-string">"webpack --config webpack.config.js"</span>,
-    <span class="hljs-attr">"watch"</span>: <span class="hljs-string">"npm-watch"</span>
+    <span class="hljs-attr">"watch"</span>: <span class="hljs-string">"npm-watch"</span>,
+    <span class="hljs-attr">"try"</span>: <span class="hljs-string">"DEBUG=test babel-node test"</span>
   },
   <span class="hljs-attr">"watch"</span>: {
     <span class="hljs-attr">"babel"</span>: {
@@ -98,9 +99,10 @@
   },
   <span class="hljs-attr">"dependencies"</span>: {
     <span class="hljs-attr">"caller-id"</span>: <span class="hljs-string">"^0.1.0"</span>,
-    <span class="hljs-attr">"debug"</span>: <span class="hljs-string">"^2.2.0"</span>,
+    <span class="hljs-attr">"debug"</span>: <span class="hljs-string">"^2.6.8"</span>,
     <span class="hljs-attr">"lodash.set"</span>: <span class="hljs-string">"^4.3.2"</span>,
     <span class="hljs-attr">"lodash.transform"</span>: <span class="hljs-string">"^4.6.0"</span>,
+    <span class="hljs-attr">"metalsmith-move"</span>: <span class="hljs-string">"github:leviwheatcroft/metalsmith-move"</span>,
     <span class="hljs-attr">"sha1"</span>: <span class="hljs-string">"^1.1.1"</span>,
     <span class="hljs-attr">"socket.io"</span>: <span class="hljs-string">"^1.7.3"</span>,
     <span class="hljs-attr">"st"</span>: <span class="hljs-string">"^1.2.0"</span>,
@@ -124,6 +126,7 @@
     <span class="hljs-attr">"babel-register"</span>: <span class="hljs-string">"^6.16.3"</span>,
     <span class="hljs-attr">"bootstrap"</span>: <span class="hljs-string">"^3.3.7"</span>,
     <span class="hljs-attr">"bootstrap-webpack"</span>: <span class="hljs-string">"0.0.6"</span>,
+    <span class="hljs-attr">"browser-request"</span>: <span class="hljs-string">"^0.3.3"</span>,
     <span class="hljs-attr">"chai"</span>: <span class="hljs-string">"^3.5.0"</span>,
     <span class="hljs-attr">"concurrently"</span>: <span class="hljs-string">"^3.4.0"</span>,
     <span class="hljs-attr">"config"</span>: <span class="hljs-string">"^1.24.0"</span>,
@@ -141,6 +144,7 @@
     <span class="hljs-attr">"file-loader"</span>: <span class="hljs-string">"^0.11.1"</span>,
     <span class="hljs-attr">"gh-pages"</span>: <span class="hljs-string">"^0.12.0"</span>,
     <span class="hljs-attr">"hjson"</span>: <span class="hljs-string">"^2.4.1"</span>,
+    <span class="hljs-attr">"immutability-helper"</span>: <span class="hljs-string">"^2.2.2"</span>,
     <span class="hljs-attr">"imports-loader"</span>: <span class="hljs-string">"^0.7.1"</span>,
     <span class="hljs-attr">"jquery"</span>: <span class="hljs-string">"^3.2.1"</span>,
     <span class="hljs-attr">"jsonview"</span>: <span class="hljs-string">"^1.2.0"</span>,
@@ -151,7 +155,6 @@
     <span class="hljs-attr">"metalsmith-ignore"</span>: <span class="hljs-string">"^0.1.2"</span>,
     <span class="hljs-attr">"metalsmith-in-place"</span>: <span class="hljs-string">"^2.0.1"</span>,
     <span class="hljs-attr">"metalsmith-less"</span>: <span class="hljs-string">"^2.0.0"</span>,
-    <span class="hljs-attr">"metalsmith-webpack"</span>: <span class="hljs-string">"^1.0.3"</span>,
     <span class="hljs-attr">"mocha"</span>: <span class="hljs-string">"^3.1.2"</span>,
     <span class="hljs-attr">"mocha-eslint"</span>: <span class="hljs-string">"^3.0.1"</span>,
     <span class="hljs-attr">"nock"</span>: <span class="hljs-string">"^9.0.2"</span>,
@@ -192,31 +195,9 @@
   },
   <span class="hljs-attr">"babel"</span>: {
     <span class="hljs-attr">"presets"</span>: [
-      <span class="hljs-string">"stage-0"</span>
-    ],
-    <span class="hljs-attr">"plugins"</span>: [
-      <span class="hljs-string">"add-module-exports"</span>
-    ],
-    <span class="hljs-attr">"env"</span>: {
-      <span class="hljs-attr">"test"</span>: {
-        <span class="hljs-attr">"presets"</span>: [
-          <span class="hljs-string">"es2015-node6"</span>
-        ],
-        <span class="hljs-attr">"plugins"</span>: [
-          <span class="hljs-string">"istanbul"</span>
-        ]
-      },
-      <span class="hljs-attr">"node4"</span>: {
-        <span class="hljs-attr">"presets"</span>: [
-          <span class="hljs-string">"es2015-node4"</span>
-        ]
-      },
-      <span class="hljs-attr">"node6"</span>: {
-        <span class="hljs-attr">"presets"</span>: [
-          <span class="hljs-string">"es2015-node6"</span>
-        ]
-      }
-    }
+      <span class="hljs-string">"stage-0"</span>,
+      <span class="hljs-string">"es2015-node6"</span>
+    ]
   },
   <span class="hljs-attr">"nyc"</span>: {
     <span class="hljs-attr">"include"</span>: [

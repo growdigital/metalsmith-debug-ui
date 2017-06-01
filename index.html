@@ -34,6 +34,18 @@
         <a href="#usage">usage</a>
       </div>
 
+      <div class="heading h3">
+        <a href="#patch-mode">patch mode</a>
+      </div>
+
+      <div class="heading h3">
+        <a href="#report-mode">report mode</a>
+      </div>
+
+      <div class="heading h3">
+        <a href="#viewing-output">viewing output</a>
+      </div>
+
       <div class="heading h2">
         <a href="#options">options</a>
       </div>
@@ -78,13 +90,13 @@ metalsmith-debug-ui
 <p><img src="https://img.shields.io/github/stars/leviwheatcroft/metalsmith-debug-ui.svg" alt="stars"></p>
 <p><img src="https://img.shields.io/github/forks/leviwheatcroft/metalsmith-debug-ui.svg" alt="forks"></p>
 <p>Browser based debug interface for <a href="https://metalsmith.io">metalsmith</a></p>
-<p>Pauses build process after each plugin and allows you to explore files structure
-and metadata before continuing.</p>
+<p>Provides nice ui to navigate metalsmith files and metadata, allowing you to
+view any stage of the build process</p>
 <p>Features:</p>
 <ul>
 <li>nice ui for exploring files &amp; metadata</li>
-<li>cli control with <code>--debug-ui</code> arg</li>
-<li>cool react &amp; socket.io based client</li>
+<li>can jump forwards and backwards through the build process</li>
+<li>cool react based client</li>
 </ul>
 <p><img src="http://leviwheatcroft.github.io/metalsmith-debug-ui/images/files.png" alt="files interface">
 <img src="http://leviwheatcroft.github.io/metalsmith-debug-ui/images/log.png" alt="log interface"></p>
@@ -102,56 +114,82 @@ install
 usage
   </h2>
 </div>
-<p>Because this plugin needs to mutate the metalsmith instance, it can't be called
-as a regular plugin, you need to patch the metalsmith instance as shown.</p>
+<p><code>metalsmith-debug-ui</code> clones your metalsmith files and metadata strutures at
+different times during the build process and stores this history. Then it
+injects a browser based client into your build output which allows you to view
+that history.</p>
+<div class="pilwrap" id="patch-mode">
+  <h3>
+    <a href="#patch-mode" name="patch-mode" class="pilcrow"></a>
+patch mode
+  </h3>
+</div>
+<p>This will report after every plugin. You need to patch your metalsmith instance
+with <code>debugUi.patch</code>.</p>
 <pre><code class="javascript"><span class="hljs-keyword">import</span> Metalsmith <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith'</span>
 <span class="hljs-keyword">import</span> debugUi <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-debug-ui'</span>
 
 <span class="hljs-keyword">let</span> ms = Metalsmith(<span class="hljs-string">'src'</span>)
-debugUi(ms, { <span class="hljs-attr">always</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">5050</span> })
+
+debugUi.patch(ms)
 
 ms
 .use(...)
 .build(...)
 </code></pre>
-<p>To initiate debug-ui you need to pass command line arg <code>--debug-ui</code>, or pass
-the option <code>always: true</code>.</p>
+<p>In patch mode if a plugin throws an exception, no further plugins will be
+executed but debug-ui will still be written to your build directory.</p>
+<div class="pilwrap" id="report-mode">
+  <h3>
+    <a href="#report-mode" name="report-mode" class="pilcrow"></a>
+report mode
+  </h3>
+</div>
+<p>Just call <code>debugUi.report</code> as a plugin</p>
+<pre><code class="javascript"><span class="hljs-keyword">import</span> Metalsmith <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith'</span>
+<span class="hljs-keyword">import</span> debugUi <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-debug-ui'</span>
+
+<span class="hljs-keyword">let</span> ms = Metalsmith(<span class="hljs-string">'src'</span>) <span class="hljs-comment">// no need to patch</span>
+
+debugUi.patch(ms)
+
+ms
+.use(myFirstPlugin({...}))
+.use(mySecondPlugin({...}))
+.use(debug.report(<span class="hljs-string">'stage 1'</span>))
+.use(myFirstPlugin({...}))
+.use(debug.report(<span class="hljs-string">'stage 2'</span>))
+.build(...)
+</code></pre>
+<p>In report mode if a plugin throws an exception, metalsmith will just die as is
+normal behaviour. However, the last call to <code>debugUi.report</code> would have already
+written the debug ui to your build directory.</p>
+<div class="pilwrap" id="viewing-output">
+  <h3>
+    <a href="#viewing-output" name="viewing-output" class="pilcrow"></a>
+viewing output
+  </h3>
+</div>
+<p>The client should be built with the rest of your site, and will be located at
+<code>debug-ui/index.html</code> in your build directory. You should use your favourite
+static development server to view it in the same way you would view anything
+else in your build directory.</p>
 <div class="pilwrap" id="options">
   <h2>
     <a href="#options" name="options" class="pilcrow"></a>
 options
   </h2>
 </div>
-<p><em>always</em>: {Boolean} (Default: false) if true, debug-ui will run without
-<code>--debug-ui</code> command line arg.
-<em>port</em>: {Number} (Default: 8081) http port</p>
+<p>nil</p>
 <div class="pilwrap" id="plugin-compatibility">
   <h2>
     <a href="#plugin-compatibility" name="plugin-compatibility" class="pilcrow"></a>
 plugin compatibility
   </h2>
 </div>
-<p>Far as I'm aware all plugins will work when using debug ui.</p>
-<p>However plugins need to explicitly use debug-ui's log function wrapper in order
-for their debug output to show up in debug-ui, and most plugins don't do that
-at this time. The example below show's how to do that.</p>
-<p>In addition, debug-ui can only identify plugins which export a named function
-as the plugin. The example shows that too.</p>
-<pre><code class="javascript"><span class="hljs-comment">// metalsmith-witty-quote-generator</span>
-<span class="hljs-keyword">import</span> debug <span class="hljs-keyword">from</span> <span class="hljs-string">'debug'</span>
-
-<span class="hljs-comment">// start debugging as normal</span>
-<span class="hljs-keyword">const</span> dbg = debug(<span class="hljs-string">'witty-quote-generator'</span>)
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">options</span>) </span>{
-  <span class="hljs-comment">// use named function here</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">wittyQuoteGenerator</span>(<span class="hljs-params">files, metalsmith, done</span>) </span>{
-    <span class="hljs-comment">// patch debug.log like this</span>
-    debug.log = metalsmith.log || debug.log
-    <span class="hljs-comment">// ... your plugin logic</span>
-  }
-}
-</code></pre>
+<p>Some plugins may not write to the <code>debug-ui</code> log, although I haven't found any
+yet. In theory any plugins using <code>debug v2.x.x</code> should work. If you find one
+please post an issue.</p>
 <div class="pilwrap" id="testing">
   <h2>
     <a href="#testing" name="testing" class="pilcrow"></a>

@@ -49,33 +49,19 @@
           <pre class="javascript"><span class="hljs-keyword">const</span> webpack = <span class="hljs-built_in">require</span>(<span class="hljs-string">'webpack'</span>)
 <span class="hljs-keyword">const</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>)
 <span class="hljs-keyword">const</span> baseDir = __dirname
+<span class="hljs-keyword">const</span> prodn = process.env.NODE_ENV === <span class="hljs-string">'production'</span>
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`webpack <span class="hljs-subst">${prodn ? <span class="hljs-string">'production'</span> : <span class="hljs-string">'development'</span>}</span> build`</span>)
 
 <span class="hljs-keyword">const</span> config = {
-  <span class="hljs-attr">devtool</span>: <span class="hljs-string">'cheap-source-map'</span>,
+  <span class="hljs-attr">devtool</span>: prodn ? <span class="hljs-string">'eval'</span> : <span class="hljs-string">'source-map'</span>,
   <span class="hljs-attr">entry</span>: path.resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>, <span class="hljs-string">'client.js'</span>),
   <span class="hljs-attr">output</span>: {
     <span class="hljs-attr">path</span>: path.resolve(baseDir, <span class="hljs-string">'dist'</span>, <span class="hljs-string">'client'</span>),
     <span class="hljs-attr">filename</span>: <span class="hljs-string">'client.js'</span>
   },
   <span class="hljs-attr">resolve</span>: {
-    <span class="hljs-attr">alias</span>: {
-</pre>
-        </td>
-      </tr>
-    
-      <tr>
-        <td class="docs">
-          <div class="pilwrap">
-  <a class="pilcrow" href="#section-2" id="section-2"></a>
-</div>
-<p>jquery: 'jquery/src/jquery' // ,
-'react-json-tree/lib': 'react-json-tree/lib',
-'react-json-tree': 'react-json-tree',
-'react': 'react'</p>
-
-        </td>
-        <td class="code highlight">
-          <pre class="javascript">    }
+    <span class="hljs-attr">extensions</span>: [<span class="hljs-string">'.js'</span>, <span class="hljs-string">'.jsx'</span>],
+    <span class="hljs-attr">alias</span>: {}
   },
   <span class="hljs-attr">module</span>: {
     <span class="hljs-attr">rules</span>: [
@@ -83,8 +69,10 @@
         <span class="hljs-attr">test</span>: <span class="hljs-regexp">/\.(js|jsx)$/</span>,
         <span class="hljs-attr">include</span>: [
           path.resolve(baseDir, <span class="hljs-string">'lib'</span>),
-          path.resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>)
+          path.resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>),
+          path.resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>, <span class="hljs-string">'Components'</span>)
         ],
+        <span class="hljs-attr">exclude</span>: <span class="hljs-regexp">/node_modules/</span>,
         <span class="hljs-attr">use</span>: {
           <span class="hljs-attr">loader</span>: <span class="hljs-string">'babel-loader'</span>,
           <span class="hljs-attr">options</span>: {
@@ -105,43 +93,16 @@
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-3" id="section-3"></a>
+  <a class="pilcrow" href="#section-2" id="section-2"></a>
 </div>
-<p>new webpack.ProvidePlugin({
-// $: 'jquery' // ,
-// jQuery: 'jquery',
-// jsonview: 'jsonview',
-// bootstrap: 'bootstrap'
-}),
-react needs to be built with NODE_ENV = 'production'</p>
+<p>prodn ? new webpack.ProvidePlugin({
+React: 'react' // doesn't work
+}) : false,</p>
 
         </td>
         <td class="code highlight">
-          <pre class="javascript">    <span class="hljs-keyword">new</span> webpack.DefinePlugin({
-      <span class="hljs-string">'process.env'</span>: {
-        <span class="hljs-attr">NODE_ENV</span>: <span class="hljs-built_in">JSON</span>.stringify(<span class="hljs-string">'production'</span>)
-      }
-    }),
-</pre>
-        </td>
-      </tr>
-    
-      <tr>
-        <td class="docs">
-          <div class="pilwrap">
-  <a class="pilcrow" href="#section-4" id="section-4"></a>
-</div>
-<p>new webpack.HotModuleReplacementPlugin(),</p>
-
-        </td>
-        <td class="code highlight">
-          <pre class="javascript">    <span class="hljs-keyword">new</span> webpack.NoEmitOnErrorsPlugin(),
-    <span class="hljs-keyword">new</span> webpack.optimize.UglifyJsPlugin({
-      <span class="hljs-attr">compress</span>: { <span class="hljs-attr">warnings</span>: <span class="hljs-literal">false</span> },
-      <span class="hljs-attr">output</span>: { <span class="hljs-attr">comments</span>: <span class="hljs-literal">false</span> },
-      <span class="hljs-attr">sourceMap</span>: <span class="hljs-literal">true</span>
-    })
-  ]
+          <pre class="javascript">    prodn ? <span class="hljs-keyword">new</span> webpack.optimize.UglifyJsPlugin() : <span class="hljs-literal">false</span>
+  ].filter(<span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> (e))
 }
 
 <span class="hljs-built_in">module</span>.exports = config

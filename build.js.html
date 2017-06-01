@@ -3,14 +3,14 @@
 <head>
   <title>build.js</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" media="all" href="../doc-style.css" />
-  <script src="../doc-filelist.js"></script>
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
   <script>
-    var relativeDir = "../";
-    var thisFile = "lib/build.js";
+    var relativeDir = "";
+    var thisFile = "build.js";
     var defaultSidebar = true;
   </script>
-  <script src="../doc-script.js"></script>
+  <script src="doc-script.js"></script>
 
 </head>
 <body>
@@ -52,15 +52,13 @@
         <td class="code highlight">
           <pre class="javascript"><span class="hljs-keyword">import</span> Metalsmith <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith'</span>
 <span class="hljs-keyword">import</span> debug <span class="hljs-keyword">from</span> <span class="hljs-string">'debug'</span>
-<span class="hljs-keyword">import</span> {
-  resolve
-} <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>
 <span class="hljs-keyword">import</span> less <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-less'</span>
 <span class="hljs-keyword">import</span> ignore <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-ignore'</span>
 <span class="hljs-keyword">import</span> inPlace <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-in-place'</span>
+<span class="hljs-keyword">import</span> webpack <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-webpack'</span>
+<span class="hljs-keyword">import</span> move <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-move'</span>
 
 <span class="hljs-keyword">const</span> dbg = debug(<span class="hljs-string">'metalsmith-debug-ui'</span>)
-<span class="hljs-keyword">const</span> baseDir = resolve(__dirname, <span class="hljs-string">'..'</span>)
 
 </pre>
         </td>
@@ -76,8 +74,7 @@
 Metalsmith build
   </h2>
 </div>
-<p>simple ms procedure to build the client
-I couldn't get webpack to work here so I'm doing that externally.</p>
+<p>simple ms procedure to build the client</p>
 </div>
 <div class="body">
 </div>
@@ -85,9 +82,13 @@ I couldn't get webpack to work here so I'm doing that externally.</p>
 
         </td>
         <td class="code highlight">
-          <pre class="javascript">Metalsmith(baseDir)
-.source(resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>))
-.destination(resolve(baseDir, <span class="hljs-string">'dist'</span>, <span class="hljs-string">'client'</span>))
+          <pre class="javascript">Metalsmith(<span class="hljs-string">'./'</span>)
+.source(<span class="hljs-string">'lib/client'</span>)
+.destination(<span class="hljs-string">'dist/client'</span>)
+.use(webpack())
+.use(move({
+  <span class="hljs-string">'**/*.jsx'</span>: <span class="hljs-literal">false</span>
+}))
 .use(less({
   <span class="hljs-attr">pattern</span>: <span class="hljs-string">'styles.less'</span>
 }))
