@@ -63,7 +63,7 @@
   <span class="hljs-attr">"license"</span>: <span class="hljs-string">"MIT"</span>,
   <span class="hljs-attr">"main"</span>: <span class="hljs-string">"dist/index.js"</span>,
   <span class="hljs-attr">"scripts"</span>: {
-    <span class="hljs-attr">"build"</span>: <span class="hljs-string">"npm run babel &amp;&amp; npm run client &amp;&amp; npm run docs &amp;&amp; cp docs/README.md.html docs/index.html &amp;&amp; npm run gh-pages"</span>,
+    <span class="hljs-attr">"build"</span>: <span class="hljs-string">"npm run babel &amp;&amp; npm run client:prodn &amp;&amp; npm run docs &amp;&amp; cp docs/README.md.html docs/index.html &amp;&amp; npm run gh-pages"</span>,
     <span class="hljs-attr">"client"</span>: <span class="hljs-string">"cross-env DEBUG=metalsmith* babel-node build"</span>,
     <span class="hljs-attr">"client:prodn"</span>: <span class="hljs-string">"cross-env DEBUG=metalsmith* NODE_ENV=production babel-node build"</span>,
     <span class="hljs-attr">"readme"</span>: <span class="hljs-string">"node-readme"</span>,
