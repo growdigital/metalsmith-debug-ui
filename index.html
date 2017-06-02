@@ -46,6 +46,14 @@
         <a href="#viewing-output">viewing output</a>
       </div>
 
+      <div class="heading h3">
+        <a href="#errors-during-build">errors during build</a>
+      </div>
+
+      <div class="heading h2">
+        <a href="#demo">demo</a>
+      </div>
+
       <div class="heading h2">
         <a href="#options">options</a>
       </div>
@@ -137,8 +145,6 @@ ms
 .use(...)
 .build(...)
 </code></pre>
-<p>In patch mode if a plugin throws an exception, no further plugins will be
-executed but debug-ui will still be written to your build directory.</p>
 <div class="pilwrap" id="report-mode">
   <h3>
     <a href="#report-mode" name="report-mode" class="pilcrow"></a>
@@ -161,9 +167,6 @@ ms
 .use(debug.report(<span class="hljs-string">'stage 2'</span>))
 .build(...)
 </code></pre>
-<p>In report mode if a plugin throws an exception, metalsmith will just die as is
-normal behaviour. However, the last call to <code>debugUi.report</code> would have already
-written the debug ui to your build directory.</p>
 <div class="pilwrap" id="viewing-output">
   <h3>
     <a href="#viewing-output" name="viewing-output" class="pilcrow"></a>
@@ -174,6 +177,28 @@ viewing output
 <code>debug-ui/index.html</code> in your build directory. You should use your favourite
 static development server to view it in the same way you would view anything
 else in your build directory.</p>
+<div class="pilwrap" id="errors-during-build">
+  <h3>
+    <a href="#errors-during-build" name="errors-during-build" class="pilcrow"></a>
+errors during build
+  </h3>
+</div>
+<p>In patch mode if a plugin throws an exception, no further plugins will be
+executed but debug-ui will still be written to your build directory.</p>
+<p>In report mode if a plugin throws an exception, metalsmith will just die (as is
+normal behaviour). However, the last call to <code>debugUi.report</code> would have already
+written the debug ui to your build directory.</p>
+<p>Because remaining plugins are not called in either mode, plugins like
+<code>metalsmith-dev-server</code> will not be called, so you won't be able to view
+the debug ui. I recommend implementing <a href="https://www.browsersync.io/">browser-sync</a> instead.</p>
+<div class="pilwrap" id="demo">
+  <h2>
+    <a href="#demo" name="demo" class="pilcrow"></a>
+demo
+  </h2>
+</div>
+<p>see <a href="https://github.com/leviwheatcroft/metalsmith-all-the-things">metalsmith-all-the-things</a> for a full working
+demo.</p>
 <div class="pilwrap" id="options">
   <h2>
     <a href="#options" name="options" class="pilcrow"></a>
