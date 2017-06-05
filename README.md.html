@@ -50,6 +50,10 @@
         <a href="#errors-during-build">errors during build</a>
       </div>
 
+      <div class="heading h3">
+        <a href="#anonymous-plugins">anonymous plugins</a>
+      </div>
+
       <div class="heading h2">
         <a href="#demo">demo</a>
       </div>
@@ -157,14 +161,12 @@ report mode
 
 <span class="hljs-keyword">let</span> ms = Metalsmith(<span class="hljs-string">'src'</span>) <span class="hljs-comment">// no need to patch</span>
 
-debugUi.patch(ms)
-
 ms
 .use(myFirstPlugin({...}))
 .use(mySecondPlugin({...}))
-.use(debug.report(<span class="hljs-string">'stage 1'</span>))
+.use(debugUi.report(<span class="hljs-string">'stage 1'</span>))
 .use(myFirstPlugin({...}))
-.use(debug.report(<span class="hljs-string">'stage 2'</span>))
+.use(debugUi.report(<span class="hljs-string">'stage 2'</span>))
 .build(...)
 </code></pre>
 <div class="pilwrap" id="viewing-output">
@@ -191,6 +193,26 @@ written the debug ui to your build directory.</p>
 <p>Because remaining plugins are not called in either mode, plugins like
 <code>metalsmith-dev-server</code> will not be called, so you won't be able to view
 the debug ui. I recommend implementing <a href="https://www.browsersync.io/">browser-sync</a> instead.</p>
+<div class="pilwrap" id="anonymous-plugins">
+  <h3>
+    <a href="#anonymous-plugins" name="anonymous-plugins" class="pilcrow"></a>
+anonymous plugins
+  </h3>
+</div>
+<p>The only way debug-ui can identify a plugin is to read the name of the function
+returned by that plugin, but most plugins return anonymous functions. There's
+a number of ways you can reduce this problem.</p>
+<p>__ metalsmith-sugar __
+<a href="https://github.com/connected-world-services/metalsmith-sugar">metalsmith-sugar</a> allows for a different syntax for your
+build process, and also provides named functions as plugins. It completely
+solves this problem if you use the alternative syntax.</p>
+<p>__ debugUI.report __
+even if you're using patch mode, you can still slip in a few <code>debugUi.report</code>
+calls, which will create markers in your list of plugins.</p>
+<p>__ fix the plugin __
+If you're a plugin maintainer, please look into returning a named function
+instead of an anonymous one. If you submit a PR somewhere, mention it in
+<a href="https://github.com/leviwheatcroft/metalsmith-debug-ui/issues/2">this issue</a></p>
 <div class="pilwrap" id="demo">
   <h2>
     <a href="#demo" name="demo" class="pilcrow"></a>
