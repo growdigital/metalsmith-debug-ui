@@ -329,9 +329,8 @@ report
 
         </td>
         <td class="code highlight">
-          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">report</span> (<span class="hljs-params">name</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">files, metalsmith</span>) =&gt;</span> {
-    pushData(files, metalsmith, name)
+          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">report</span> (<span class="hljs-params">fn, files, metalsmith</span>) </span>{
+  data.plugins.push({
 </pre>
         </td>
       </tr>
@@ -341,13 +340,57 @@ report
           <div class="pilwrap">
   <a class="pilcrow" href="#section-12" id="section-12"></a>
 </div>
-<p>if build is not patched we do this each time data is updated</p>
+<p>use fn.name to give user some idea where we're up to
+name of bound function is 'bound functionName'</p>
 
         </td>
         <td class="code highlight">
-          <pre class="javascript">    <span class="hljs-keyword">if</span> (!isPatched) writeData(files, metalsmith)
-    <span class="hljs-keyword">return</span> writeClient(files, metalsmith) <span class="hljs-comment">// promise</span>
-  }
+          <pre class="javascript">    fnName: (fn.name || <span class="hljs-string">'anonymous'</span>).replace(<span class="hljs-regexp">/bound /</span>, <span class="hljs-string">''</span>),
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-13" id="section-13"></a>
+</div>
+<p>convert files structure to directory tree</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">    files: tree(render(files)),
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-14" id="section-14"></a>
+</div>
+<p>normal metalsmith metadata</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">    metadata: render(metalsmith.metadata())
+  })
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-15" id="section-15"></a>
+</div>
+<p>pushData(files, metalsmith, fn.name)
+if build is not patched we do this each time data is updated</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  <span class="hljs-keyword">if</span> (!isPatched) writeData(files, metalsmith)
+  <span class="hljs-keyword">return</span> writeClient(files, metalsmith) <span class="hljs-comment">// promise</span>
 }
 
 </pre>
@@ -383,8 +426,48 @@ plugins with the debug-ui recorder, before calling the original build fn.</p>
         <td class="code highlight">
           <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">build</span> (<span class="hljs-params">callback</span>) </span>{
   dbg(<span class="hljs-string">'build called'</span>)
-  <span class="hljs-keyword">const</span> masked = []
-  <span class="hljs-keyword">this</span>.plugins.forEach(<span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> {
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-17" id="section-17"></a>
+</div>
+<p><code>masked</code> will become the new plugin array</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  <span class="hljs-keyword">const</span> masked = []
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-18" id="section-18"></a>
+</div>
+<p>before running any plugins, write the client to the build dir</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  masked.push(writeClient)
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-19" id="section-19"></a>
+</div>
+<p>wrap all existing plugins to capture data</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">  <span class="hljs-keyword">this</span>.plugins.forEach(<span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> {
     masked.push(<span class="hljs-function">(<span class="hljs-params">files, metalsmith</span>) =&gt;</span> {
 </pre>
         </td>
@@ -393,7 +476,7 @@ plugins with the debug-ui recorder, before calling the original build fn.</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-14" id="section-14"></a>
+  <a class="pilcrow" href="#section-20" id="section-20"></a>
 </div>
 <p>if error state, no point running more plugins</p>
 
@@ -402,6 +485,7 @@ plugins with the debug-ui recorder, before calling the original build fn.</p>
           <pre class="javascript">      <span class="hljs-keyword">if</span> (pluginError) <span class="hljs-keyword">return</span> vow.resolve()
       <span class="hljs-keyword">return</span> vow.resolve()
       .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+        <span class="hljs-keyword">let</span> defer = vow.defer()
 </pre>
         </td>
       </tr>
@@ -409,27 +493,7 @@ plugins with the debug-ui recorder, before calling the original build fn.</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-15" id="section-15"></a>
-</div>
-<p>return vow.Promise((resolve, reject) =&gt; {
-let wrapped = wrap(fn, (err) =&gt; {
-if (err) return reject()
-resolve()
-})
-wrapped(files, metalsmith)
-})</p>
-
-        </td>
-        <td class="code highlight">
-          <pre class="javascript">        <span class="hljs-keyword">let</span> defer = vow.defer()
-</pre>
-        </td>
-      </tr>
-    
-      <tr>
-        <td class="docs">
-          <div class="pilwrap">
-  <a class="pilcrow" href="#section-16" id="section-16"></a>
+  <a class="pilcrow" href="#section-21" id="section-21"></a>
 </div>
 <p>wrap here to support sync, async, and promises.. like metalsmith
 this also traps exceptions</p>
@@ -443,14 +507,13 @@ this also traps exceptions</p>
         wrapped(files, metalsmith)
         <span class="hljs-keyword">return</span> defer.promise()
       })
-      .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> report(fn.name)(files, metalsmith))
+      .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> report(fn, files, metalsmith))
       .catch(<span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> {
         pluginError = <span class="hljs-literal">true</span>
         dbg(<span class="hljs-string">'caught plugin error'</span>, err)
       })
     })
   })
-  masked.push(<span class="hljs-function">(<span class="hljs-params">files, metalsmith</span>) =&gt;</span> {
 </pre>
         </td>
       </tr>
@@ -458,14 +521,14 @@ this also traps exceptions</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-17" id="section-17"></a>
+  <a class="pilcrow" href="#section-22" id="section-22"></a>
 </div>
-<p>if build is patched we do this once at the end (here)</p>
+<p>after all plugins have run, write data to build dir</p>
 
         </td>
         <td class="code highlight">
-          <pre class="javascript">    <span class="hljs-keyword">return</span> writeData(files, metalsmith)
-  })
+          <pre class="javascript">  masked.push(writeData)
+
   <span class="hljs-keyword">this</span>.plugins = masked
 </pre>
         </td>
@@ -474,7 +537,7 @@ this also traps exceptions</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-18" id="section-18"></a>
+  <a class="pilcrow" href="#section-23" id="section-23"></a>
 </div>
 <p>run metalsmith's original build</p>
 
@@ -523,57 +586,21 @@ pushData
 </div>
 </div>
 </div>
-
-        </td>
-        <td class="code highlight">
-          <pre class="javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">pushData</span> (<span class="hljs-params">files, metalsmith, name</span>) </span>{
+function pushData (files, metalsmith, name) {
   data.plugins.push({
-</pre>
-        </td>
-      </tr>
-    
-      <tr>
-        <td class="docs">
-          <div class="pilwrap">
-  <a class="pilcrow" href="#section-20" id="section-20"></a>
-</div>
-<p>use fn.name to give user some idea where we're up to
-name of bound function is 'bound functionName'</p>
-
-        </td>
-        <td class="code highlight">
-          <pre class="javascript">    fnName: (name || <span class="hljs-string">'anonymous'</span>).replace(<span class="hljs-regexp">/bound /</span>, <span class="hljs-string">''</span>),
-</pre>
-        </td>
-      </tr>
-    
-      <tr>
-        <td class="docs">
-          <div class="pilwrap">
-  <a class="pilcrow" href="#section-21" id="section-21"></a>
-</div>
-<p>convert files structure to directory tree</p>
-
-        </td>
-        <td class="code highlight">
-          <pre class="javascript">    files: tree(render(files)),
-</pre>
-        </td>
-      </tr>
-    
-      <tr>
-        <td class="docs">
-          <div class="pilwrap">
-  <a class="pilcrow" href="#section-22" id="section-22"></a>
-</div>
-<p>normal metalsmith metadata</p>
-
-        </td>
-        <td class="code highlight">
-          <pre class="javascript">    metadata: render(metalsmith.metadata())
+    // use fn.name to give user some idea where we're up to
+    // name of bound function is 'bound functionName'
+    fnName: (name || 'anonymous').replace(/bound /, ''),
+    // convert files structure to directory tree
+    files: tree(render(files)),
+    // normal metalsmith metadata
+    metadata: render(metalsmith.metadata())
   })
 }
 
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">
 </pre>
         </td>
       </tr>
@@ -620,7 +647,7 @@ injectData
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-24" id="section-24"></a>
+  <a class="pilcrow" href="#section-26" id="section-26"></a>
 </div>
 <p>write the history data, no need for async</p>
 
@@ -676,7 +703,7 @@ writeClient
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-26" id="section-26"></a>
+  <a class="pilcrow" href="#section-28" id="section-28"></a>
 </div>
 <p>scrape the client dir and inject into files</p>
 
@@ -830,7 +857,7 @@ or just copies)</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-30" id="section-30"></a>
+  <a class="pilcrow" href="#section-32" id="section-32"></a>
 </div>
 <p>use copy so we don't mutate files</p>
 
@@ -844,7 +871,7 @@ or just copies)</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-31" id="section-31"></a>
+  <a class="pilcrow" href="#section-33" id="section-33"></a>
 </div>
 <p>store seen objects so we can avoid re-printing them</p>
 
@@ -858,7 +885,7 @@ or just copies)</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-32" id="section-32"></a>
+  <a class="pilcrow" href="#section-34" id="section-34"></a>
 </div>
 <p>store paths so we can assign converted values to the right path</p>
 
@@ -875,7 +902,7 @@ or just copies)</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-33" id="section-33"></a>
+  <a class="pilcrow" href="#section-35" id="section-35"></a>
 </div>
 <p>store path of current item</p>
 
@@ -895,7 +922,7 @@ or just copies)</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-34" id="section-34"></a>
+  <a class="pilcrow" href="#section-36" id="section-36"></a>
 </div>
 <p>check if this item has been rendered already</p>
 
@@ -912,7 +939,7 @@ or just copies)</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-35" id="section-35"></a>
+  <a class="pilcrow" href="#section-37" id="section-37"></a>
 </div>
 <p>store objects so we can assess them next loop</p>
 
@@ -930,7 +957,7 @@ or just copies)</p>
       <tr>
         <td class="docs">
           <div class="pilwrap">
-  <a class="pilcrow" href="#section-36" id="section-36"></a>
+  <a class="pilcrow" href="#section-38" id="section-38"></a>
 </div>
 <p>if none ofthe above apply, just stash the value</p>
 
