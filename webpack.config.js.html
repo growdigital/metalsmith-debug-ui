@@ -51,9 +51,10 @@
 <span class="hljs-keyword">const</span> baseDir = __dirname
 <span class="hljs-keyword">const</span> prodn = process.env.NODE_ENV === <span class="hljs-string">'production'</span>
 <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`webpack <span class="hljs-subst">${prodn ? <span class="hljs-string">'production'</span> : <span class="hljs-string">'development'</span>}</span> build`</span>)
+process.traceDeprecation = <span class="hljs-literal">true</span>
 
 <span class="hljs-keyword">const</span> config = {
-  <span class="hljs-attr">devtool</span>: prodn ? <span class="hljs-string">'eval'</span> : <span class="hljs-string">'source-map'</span>,
+  <span class="hljs-attr">devtool</span>: <span class="hljs-string">'source-map'</span>,
   <span class="hljs-attr">entry</span>: path.resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>, <span class="hljs-string">'client.js'</span>),
   <span class="hljs-attr">output</span>: {
     <span class="hljs-attr">path</span>: path.resolve(baseDir, <span class="hljs-string">'dist'</span>, <span class="hljs-string">'client'</span>),
@@ -62,28 +63,6 @@
   <span class="hljs-attr">resolve</span>: {
     <span class="hljs-attr">extensions</span>: [<span class="hljs-string">'.js'</span>, <span class="hljs-string">'.jsx'</span>],
     <span class="hljs-attr">alias</span>: {}
-  },
-  <span class="hljs-attr">module</span>: {
-    <span class="hljs-attr">rules</span>: [
-      {
-        <span class="hljs-attr">test</span>: <span class="hljs-regexp">/\.(js|jsx)$/</span>,
-        <span class="hljs-attr">include</span>: [
-          path.resolve(baseDir, <span class="hljs-string">'lib'</span>),
-          path.resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>),
-          path.resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>, <span class="hljs-string">'Components'</span>)
-        ],
-        <span class="hljs-attr">exclude</span>: <span class="hljs-regexp">/node_modules/</span>,
-        <span class="hljs-attr">use</span>: {
-          <span class="hljs-attr">loader</span>: <span class="hljs-string">'babel-loader'</span>,
-          <span class="hljs-attr">options</span>: {
-            <span class="hljs-attr">presets</span>: [
-              <span class="hljs-string">'es2015'</span>,
-              <span class="hljs-string">'react'</span>
-            ]
-          }
-        }
-      }
-    ]
   },
   <span class="hljs-attr">plugins</span>: [
 </pre>
@@ -101,8 +80,42 @@ React: 'react' // doesn't work
 
         </td>
         <td class="code highlight">
-          <pre class="javascript">    prodn ? <span class="hljs-keyword">new</span> webpack.optimize.UglifyJsPlugin() : <span class="hljs-literal">false</span>
-  ].filter(<span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> (e))
+          <pre class="javascript">    prodn ? <span class="hljs-keyword">new</span> webpack.optimize.UglifyJsPlugin({
+      <span class="hljs-attr">sourceMap</span>: !prodn,
+      <span class="hljs-attr">compressor</span>: {
+        <span class="hljs-attr">warnings</span>: <span class="hljs-literal">false</span>
+      }
+    }) : <span class="hljs-literal">false</span>
+  ].filter(<span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> e),
+  <span class="hljs-attr">module</span>: {
+    <span class="hljs-attr">loaders</span>: [
+      {
+        <span class="hljs-attr">test</span>: <span class="hljs-regexp">/\.(js|jsx)$/</span>,
+        <span class="hljs-attr">include</span>: [
+          path.resolve(baseDir, <span class="hljs-string">'lib'</span>),
+          path.resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>),
+          path.resolve(baseDir, <span class="hljs-string">'lib'</span>, <span class="hljs-string">'client'</span>, <span class="hljs-string">'Components'</span>)
+        ],
+        <span class="hljs-attr">exclude</span>: <span class="hljs-regexp">/node_modules/</span>,
+        <span class="hljs-attr">use</span>: {
+          <span class="hljs-attr">loader</span>: <span class="hljs-string">'babel-loader'</span>,
+          <span class="hljs-attr">options</span>: {
+            <span class="hljs-attr">presets</span>: [
+              <span class="hljs-string">'es2015'</span>,
+              <span class="hljs-string">'react'</span>
+            ]
+          }
+        }
+      },
+      {
+        <span class="hljs-attr">test</span>: <span class="hljs-regexp">/\.css$/</span>,
+        <span class="hljs-attr">use</span>: [
+          { <span class="hljs-attr">loader</span>: <span class="hljs-string">'style-loader'</span> },
+          { <span class="hljs-attr">loader</span>: <span class="hljs-string">'css-loader'</span> }
+        ]
+      }
+    ]
+  }
 }
 
 <span class="hljs-built_in">module</span>.exports = config
