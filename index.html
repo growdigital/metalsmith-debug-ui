@@ -97,13 +97,9 @@ metalsmith-debug-ui
   </h1>
 </div>
 <p><img src="https://nodei.co/npm/metalsmith-debug-ui.png?downloads=true&amp;downloadRank=true&amp;stars=true" alt="nodei.co"></p>
-<p><img src="https://img.shields.io/npm/v/metalsmith-debug-ui.svg" alt="npm"></p>
-<p><img src="https://img.shields.io/github/issues/leviwheatcroft/metalsmith-debug-ui.svg" alt="github-issues"></p>
-<p><img src="https://img.shields.io/github/stars/leviwheatcroft/metalsmith-debug-ui.svg" alt="stars"></p>
-<p><img src="https://img.shields.io/github/forks/leviwheatcroft/metalsmith-debug-ui.svg" alt="forks"></p>
+<p><img src="https://img.shields.io/npm/v/metalsmith-debug-ui.svg" alt="npm"> <img src="https://img.shields.io/github/issues/leviwheatcroft/metalsmith-debug-ui.svg" alt="github-issues"> <img src="https://img.shields.io/github/stars/leviwheatcroft/metalsmith-debug-ui.svg" alt="stars"> <img src="https://img.shields.io/github/forks/leviwheatcroft/metalsmith-debug-ui.svg" alt="forks"></p>
 <p>Browser based debug interface for <a href="https://metalsmith.io">metalsmith</a></p>
-<p>Provides nice ui to navigate metalsmith files and metadata, allowing you to
-view any stage of the build process</p>
+<p>Provides nice ui to navigate metalsmith files and metadata, allowing you to view any stage of the build process</p>
 <p>Features:</p>
 <ul>
 <li>nice ui for exploring files &amp; metadata</li>
@@ -136,14 +132,13 @@ that history.</p>
 patch mode
   </h3>
 </div>
-<p>This will report after every plugin. You need to patch your metalsmith instance
-with <code>debugUi.patch</code>.</p>
+<p>This will report after every plugin. You need to patch your metalsmith instance.</p>
 <pre><code class="javascript"><span class="hljs-keyword">import</span> Metalsmith <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith'</span>
-<span class="hljs-keyword">import</span> debugUi <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-debug-ui'</span>
+<span class="hljs-keyword">import</span> { patch } <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-debug-ui'</span>
 
 <span class="hljs-keyword">let</span> ms = Metalsmith(<span class="hljs-string">'src'</span>)
 
-debugUi.patch(ms)
+patch(ms)
 
 ms
 .use(...)
@@ -155,18 +150,18 @@ ms
 report mode
   </h3>
 </div>
-<p>Just call <code>debugUi.report</code> as a plugin</p>
+<p>Just call <code>report</code> as a plugin</p>
 <pre><code class="javascript"><span class="hljs-keyword">import</span> Metalsmith <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith'</span>
-<span class="hljs-keyword">import</span> debugUi <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-debug-ui'</span>
+<span class="hljs-keyword">import</span> { report } <span class="hljs-keyword">from</span> <span class="hljs-string">'metalsmith-debug-ui'</span>
 
 <span class="hljs-keyword">let</span> ms = Metalsmith(<span class="hljs-string">'src'</span>) <span class="hljs-comment">// no need to patch</span>
 
 ms
 .use(myFirstPlugin({...}))
 .use(mySecondPlugin({...}))
-.use(debugUi.report(<span class="hljs-string">'stage 1'</span>))
+.use(report(<span class="hljs-string">'stage 1'</span>))
 .use(myFirstPlugin({...}))
-.use(debugUi.report(<span class="hljs-string">'stage 2'</span>))
+.use(report(<span class="hljs-string">'stage 2'</span>))
 .build(...)
 </code></pre>
 <div class="pilwrap" id="viewing-output">
@@ -175,44 +170,23 @@ ms
 viewing output
   </h3>
 </div>
-<p>The client should be built with the rest of your site, and will be located at
-<code>debug-ui/index.html</code> in your build directory. You should use your favourite
-static development server to view it in the same way you would view anything
-else in your build directory.</p>
+<p>The client should be built with the rest of your site, and will be located at <code>debug-ui/index.html</code> in your build directory. You should use your favourite static development server to view it in the same way you would view anything else in your build directory.</p>
 <div class="pilwrap" id="errors-during-build">
   <h3>
     <a href="#errors-during-build" name="errors-during-build" class="pilcrow"></a>
 errors during build
   </h3>
 </div>
-<p>In patch mode if a plugin throws an exception, no further plugins will be
-executed but debug-ui will still be written to your build directory.</p>
-<p>In report mode if a plugin throws an exception, metalsmith will just die (as is
-normal behaviour). However, the last call to <code>debugUi.report</code> would have already
-written the debug ui to your build directory.</p>
-<p>Because remaining plugins are not called in either mode, plugins like
-<code>metalsmith-dev-server</code> will not be called, so you won't be able to view
-the debug ui. I recommend implementing <a href="https://www.browsersync.io/">browser-sync</a> instead.</p>
+<p>When a plugin throws an error metalsmith will just die as per normal behaviour, but the data debug-ui has collected will still be written to the build dir.</p>
+<p>The only problem is that if you're using a dev server like <code>metalsmith-dev-server</code> you won't be able to view the ui to see what went wrong. I recommend implementing <a href="https://www.browsersync.io/">browser-sync</a> or something instead.</p>
 <div class="pilwrap" id="anonymous-plugins">
   <h3>
     <a href="#anonymous-plugins" name="anonymous-plugins" class="pilcrow"></a>
 anonymous plugins
   </h3>
 </div>
-<p>The only way debug-ui can identify a plugin is to read the name of the function
-returned by that plugin, but most plugins return anonymous functions. There's
-a number of ways you can reduce this problem.</p>
-<p>__ metalsmith-sugar __
-<a href="https://github.com/connected-world-services/metalsmith-sugar">metalsmith-sugar</a> allows for a different syntax for your
-build process, and also provides named functions as plugins. It completely
-solves this problem if you use the alternative syntax.</p>
-<p>__ debugUI.report __
-even if you're using patch mode, you can still slip in a few <code>debugUi.report</code>
-calls, which will create markers in your list of plugins.</p>
-<p>__ fix the plugin __
-If you're a plugin maintainer, please look into returning a named function
-instead of an anonymous one. If you submit a PR somewhere, mention it in
-<a href="https://github.com/leviwheatcroft/metalsmith-debug-ui/issues/2">this issue</a></p>
+<p>It's difficult to reliably detect the names of plugins in order to report them in the ui. debug-ui first tries to sniff the plugin name from a stack trace, if that fails it checks whether the plugin returns a named function, and if that fails it will simply list the plugin as <code>anonymous</code>.</p>
+<p>In most cases this is satisfactory. If something is reported as anonymous you can easily work out what it is by looking at the plugins before and after it.</p>
 <div class="pilwrap" id="demo">
   <h2>
     <a href="#demo" name="demo" class="pilcrow"></a>
@@ -274,9 +248,7 @@ branch.</p>
 License
   </h2>
 </div>
-<ul>
-<li><strong>MIT</strong> : http://opensource.org/licenses/MIT</li>
-</ul>
+<p><strong>MIT</strong> : http://opensource.org/licenses/MIT</p>
 </div>
   </div>
 </body>
